@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="PASUPA">
+  <rect width="64" height="64" fill="#dcc6a8"/>
+  <path d="M18 15h14a12 12 0 0 1 0 24h-7v10h-7V15zm7 7v10h7a5 5 0 0 0 0-10h-7z" fill="#241d17"/>
+  <circle cx="47" cy="45" r="5" fill="#7c5b39"/>
+</svg>

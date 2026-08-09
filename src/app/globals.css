@@ -1,0 +1,984 @@
+@import "tailwindcss";
+
+/*
+ * PASUPA• — architectes (fictif)
+ * Site 12 : la synthèse des onze directions précédentes.
+ *
+ * Le parti est la sobriété. Une seule idée colorée tient toute la page :
+ * le haut est un marron clair qui se dissout en crème puis en blanc pur
+ * sur neuf cents pixels, et plus rien ne bouge ensuite. Le corps de
+ * lecture se fait donc toujours sur du blanc franc, ce qui garantit le
+ * contraste partout, et l'effet reste identique d'une page à l'autre
+ * quelle que soit leur longueur.
+ *
+ * L'en-tête et le pied de page sont les deux seuls aplats marron. Ils
+ * déclarent le contexte `.sur-brun`, qui rabaisse le gris de lecture et
+ * l'accent : sur un fond chaud, le gris courant (#6a5f53) tombe à 3,1:1
+ * et n'est plus un texte lisible.
+ */
+
+:root {
+  /* ------------------------------------------------------------ fonds */
+  --blanc: #ffffff;
+  --creme: #f7f2ea;
+  --sable: #efe6d8;
+  --brun-pale: #dcc6a8; /* haut du dégradé, fond de l'en-tête */
+  --brun-pied: #d5bd9d; /* pied de page, un cran plus soutenu */
+
+  /* ------------------------------------------------------------ encres */
+  --encre: #241d17; /* 16,6:1 sur blanc — 8,3:1 au pire du dégradé */
+  --gris: #6a5f53; /* 6,2:1 sur blanc, 5,0:1 sur sable */
+  --brun: #7c5b39; /* 6,2:1 sur blanc — accent, jamais aplat de texte */
+
+  /*
+   * Il n'y a volontairement pas de troisième gris. Un #8a7d6e avait
+   * d'abord servi aux séparateurs du fil d'Ariane, aux étiquettes de
+   * fiche et aux initiales de l'équipe : il mesure 4,01:1 sur blanc et
+   * 3,60:1 sur crème, donc en dessous du seuil dès qu'il porte du texte
+   * de onze pixels — ce qui était le cas des trois. La hiérarchie se
+   * fait ici par le corps et la casse, pas par un gris de plus.
+   */
+
+  /* ------------------------------------------------------------ traits */
+  --filet: #e6ddce; /* séparateur décoratif */
+  --filet-fort: #cbbda6; /* séparateur appuyé */
+  --bord-champ: #8f7e64; /* 3,9:1 : bordure de champ, seuil 1.4.11 tenu */
+  --erreur: #9d2f1c; /* 7,4:1 sur blanc, 6,6:1 sur crème */
+
+  /* Le dessin : deux valeurs de trait, la convention existant / projeté. */
+  --trait-projete: #241d17;
+  --trait-existant: #8f7e64;
+
+  /* Une seule mesure d'écart, doublée ou divisée. */
+  --marge: clamp(1.25rem, 4vw, 4.5rem);
+  --colonne: 78rem;
+
+  color-scheme: light;
+}
+
+/* Contexte chaud : en-tête, pied de page, tout aplat marron. */
+.sur-brun {
+  --gris: #4e443a; /* 4,7:1 sur le marron le plus soutenu */
+  --brun: #4a3520;
+  --filet: rgba(36, 29, 23, 0.16);
+  --filet-fort: rgba(36, 29, 23, 0.3);
+  --bord-champ: rgba(36, 29, 23, 0.45);
+}
+
+@theme inline {
+  /* N'exposer à Tailwind que les couleurs réellement écrites en classe.
+     `--sable` et `--bord-champ` ne servent qu'ici, dans le survol des
+     cartes et la bordure des champs : les publier en utilitaire ferait
+     croire à un usage qui n'existe pas. */
+  --color-blanc: var(--blanc);
+  --color-creme: var(--creme);
+  --color-brun-pale: var(--brun-pale);
+  --color-brun-pied: var(--brun-pied);
+  --color-encre: var(--encre);
+  --color-gris: var(--gris);
+  --color-brun: var(--brun);
+  --color-erreur: var(--erreur);
+  --color-filet: var(--filet);
+  --color-filet-fort: var(--filet-fort);
+
+  --font-titre: var(--police-titre), "Helvetica Neue", Arial, sans-serif;
+  --font-texte: var(--police-texte), system-ui, sans-serif;
+  --font-cote: var(--police-cote), ui-monospace, monospace;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* L'overscroll du bas tombe sur le pied de page, celui du haut sur
+       le marron de l'en-tête : le document ne montre jamais de blanc
+       étranger aux extrémités. */
+    background: var(--brun-pale);
+    /* Les ancres se posent sous la barre collante. */
+    scroll-padding-top: 6.5rem;
+  }
+
+  body {
+    color: var(--encre);
+    font-family: var(--font-texte);
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--encre);
+    color: var(--creme);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--encre);
+    outline-offset: 3px;
+    border-radius: 1px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+@layer components {
+  /*
+   * Le dégradé. Une seule déclaration, posée sur un calque en position
+   * absolue de 900 px de haut, suivi de blanc franc. Les arrêts sont
+   * rapprochés en fin de course pour compenser la perception : un
+   * dégradé linéaire en valeurs sRGB semble « casser » vers le clair.
+   * D'où les cinq arrêts plutôt que deux — c'est ce qui supprime la
+   * bande visible au milieu.
+   */
+  .degrade {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 900px;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      var(--brun-pale) 0%,
+      /* Le marron reste plat sur la hauteur de la barre — 81 px, soit
+         un peu plus que ses 80 px au plus large. Sans ce palier, le bas
+         de l'en-tête, qui est un aplat, se détacherait du dégradé d'un
+         demi-ton : exactement le « trait au milieu » qu'on ne veut pas. */
+      var(--brun-pale) 9%,
+      #e3d0b6 24%,
+      #ebdec9 40%,
+      #f3ebdd 58%,
+      #faf6ef 77%,
+      #fdfbf8 90%,
+      var(--blanc) 100%
+    );
+  }
+
+  /* ------------------------------------------------------- typographie */
+
+  /* Bricolage Grotesque, pris à 500/600 plutôt qu'en gras : la même
+     police que le site 3, mais dans son registre calme. */
+  .titre {
+    font-family: var(--font-titre);
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: -0.022em;
+    font-variant-numeric: lining-nums;
+  }
+
+  .titre-1 {
+    font-size: clamp(2.5rem, 6.4vw, 4.75rem);
+  }
+
+  .titre-2 {
+    font-size: clamp(1.9rem, 4.4vw, 3.1rem);
+  }
+
+  .titre-3 {
+    font-size: clamp(1.45rem, 2.6vw, 1.95rem);
+  }
+
+  .titre-4 {
+    font-size: clamp(1.1rem, 1.7vw, 1.3rem);
+    font-weight: 600;
+    letter-spacing: -0.012em;
+  }
+
+  /* La mention : le registre des cartouches et des légendes. */
+  .mention {
+    font-family: var(--font-cote);
+    font-weight: 500;
+    font-size: 0.6875rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    line-height: 1.4;
+    color: var(--gris);
+  }
+
+  .mention-encre {
+    color: var(--encre);
+  }
+
+  .chapo {
+    font-size: clamp(1.1rem, 1.9vw, 1.375rem);
+    line-height: 1.55;
+    letter-spacing: -0.004em;
+  }
+
+  /* Le chiffre clé : l'argument se lit de loin. */
+  .chiffre {
+    font-family: var(--font-titre);
+    font-weight: 500;
+    font-size: clamp(2.75rem, 6vw, 4rem);
+    line-height: 0.9;
+    letter-spacing: -0.035em;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  /* La date de la frise : le même corps que le chiffre, mais tabulaire,
+     pour que 2011 et 2026 s'alignent au chiffre près. */
+  .date-frise {
+    font-family: var(--font-titre);
+    font-weight: 500;
+    font-size: clamp(2.25rem, 5vw, 3.5rem);
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  /* Le gros point qui suit le nom. Pseudo-élément : il ne se copie pas
+     avec le texte et disparaît des lecteurs d'écran. */
+  .point::after {
+    content: "";
+    display: inline-block;
+    width: 0.3em;
+    height: 0.3em;
+    margin-left: 0.16em;
+    border-radius: 50%;
+    background: var(--brun);
+    vertical-align: 0.06em;
+  }
+
+  /* --------------------------------------------------------- mesures */
+
+  .cadre {
+    width: 100%;
+    max-width: var(--colonne);
+    margin-inline: auto;
+    padding-inline: var(--marge);
+  }
+
+  /* La colonne de lecture : 68 caractères environ, jamais davantage. */
+  .mesure {
+    max-width: 34em;
+  }
+
+  /* ----------------------------------------------------------- liens */
+
+  /* Le trait arrive au survol : c'est la seule indication de
+     cliquabilité sur du texte, et elle est discrète. */
+  .lien {
+    position: relative;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .lien::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: var(--trait-bas, -0.16em);
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .lien:hover::after,
+  .lien:focus-visible::after {
+    transform: scaleX(1);
+  }
+
+  /* Le lien de menu garde son trait quand on est sur la page. */
+  .lien-menu[aria-current="page"]::after {
+    transform: scaleX(1);
+  }
+
+  /*
+   * La cible d'au moins 24 px de haut.
+   *
+   * Un lien de seize pixels de haut suffit à la souris et pas au doigt.
+   * La dérogation « lien dans une phrase » du critère 2.5.8 ne couvre
+   * que le texte courant : dès qu'un lien vit dans une liste, une barre
+   * de navigation ou un pied de page, il lui faut sa surface. On la
+   * donne par du remplissage vertical plutôt que par une hauteur fixe,
+   * pour que le lien reste sur la ligne de base de ses voisins.
+   *
+   * Le trait du survol vit sous la boîte de remplissage : il faut le
+   * remonter d'autant, sinon il flotte à quatre pixels du mot.
+   */
+  .lien-cible {
+    display: inline-block;
+    padding-block: 0.4rem;
+  }
+
+  .lien-cible.lien::after {
+    bottom: calc(0.4rem + var(--trait-bas, -0.16em));
+  }
+
+  /*
+   * L'écart se mesure en em comme partout — mais un em de titre vaut
+   * cinquante pixels. Le même -0,16 em qui pose le trait à trois pixels
+   * sous un mot de texte courant le posait à huit sous un nom de
+   * projet : à cette distance il ne se lit plus comme un soulignement
+   * mais comme un filet de séparation, et il flotte. On le remonte de
+   * moitié dès que le lien est un titre.
+   */
+  .titre.lien,
+  .titre .lien,
+  .carte-titre {
+    --trait-bas: -0.08em;
+  }
+
+  /* L'étoile de la page courante. En `::before` pour ne pas décaler le
+     texte : elle se pose dans la marge du lien. */
+  .lien-menu {
+    position: relative;
+  }
+
+  .lien-menu[aria-current="page"] {
+    color: var(--encre);
+  }
+
+  .etoile {
+    display: inline-block;
+    width: 0.62em;
+    margin-right: 0.34em;
+    color: var(--brun);
+    font-size: 0.82em;
+    line-height: 1;
+    vertical-align: 0.08em;
+  }
+
+  /* --------------------------------------------------------- boutons */
+
+  .bouton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    min-height: 3rem;
+    padding: 0.8rem 1.55rem;
+    background: var(--encre);
+    color: var(--creme);
+    font-family: var(--font-cote);
+    font-weight: 500;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    border: 1px solid var(--encre);
+    text-decoration: none;
+    transition:
+      background-color 200ms ease,
+      color 200ms ease;
+  }
+
+  .bouton:hover,
+  .bouton:focus-visible {
+    background: transparent;
+    color: var(--encre);
+  }
+
+  .bouton-creux {
+    background: transparent;
+    color: var(--encre);
+    border-color: var(--filet-fort);
+  }
+
+  .bouton-creux:hover,
+  .bouton-creux:focus-visible {
+    background: var(--encre);
+    color: var(--creme);
+    border-color: var(--encre);
+  }
+
+  /* ---------------------------------------------------------- filets */
+
+  .filet-haut {
+    border-top: 1px solid var(--filet);
+  }
+
+  .filet-bas {
+    border-bottom: 1px solid var(--filet);
+  }
+
+  /* ----------------------------------------------------- les cartes */
+
+  /*
+   * Le survol d'une carte fait virer le dessin : le fond passe du crème
+   * au sable et le trait projeté prend le brun. C'est le « hover image =
+   * changement de couleur » demandé, obtenu sans filtre ni image — les
+   * dessins sont des SVG qui lisent les variables du contexte.
+   */
+  .carte {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .carte-dessin {
+    position: relative;
+    overflow: hidden;
+    background: var(--creme);
+    border: 1px solid var(--filet);
+    transition:
+      background-color 260ms ease,
+      border-color 260ms ease;
+  }
+
+  .carte-dessin svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .carte:hover .carte-dessin,
+  .carte:focus-within .carte-dessin {
+    background: var(--sable);
+    border-color: var(--filet-fort);
+    --trait-projete: #7c5b39;
+    --trait-existant: #a2917a;
+  }
+
+  .carte:hover .carte-dessin svg,
+  .carte:focus-within .carte-dessin svg {
+    transform: scale(1.022);
+  }
+
+  /* Le titre de la carte reprend le trait du lien : l'indication de
+     cliquabilité vaut pour toute la carte, pas pour le seul mot. */
+  .carte:hover .carte-titre::after,
+  .carte:focus-within .carte-titre::after {
+    transform: scaleX(1);
+  }
+
+  /*
+   * Le lien étendu : un seul <a>, posé sur le titre, dont la zone
+   * sensible couvre la carte entière. C'est `::before` et non `::after`
+   * parce que `.lien` occupe déjà `::after` avec son trait.
+   *
+   * On préfère ce procédé à `display: contents` sur le lien : WebKit a
+   * longtemps retiré de l'arbre d'accessibilité les éléments interactifs
+   * ainsi déclarés, et le lien disparaissait purement et simplement de
+   * VoiceOver.
+   *
+   * Le bloc conteneur du voile est le premier ancêtre positionné. Tant
+   * que `.lien` et `.couvre` vivaient sur la même ancre, ce premier
+   * ancêtre était l'ancre elle-même — `.lien` pose `position: relative`
+   * pour son propre trait — et `inset: 0` se repliait sur les quelques
+   * mots du titre : la carte n'était cliquable que sur son nom, et rien
+   * ne le montrait. Le `position: static` ci-dessous est la garantie
+   * que cela ne se reproduit pas : il oblige à porter `.lien` sur un
+   * <span> à l'intérieur de l'ancre, sans quoi le trait du survol
+   * disparaît et la panne devient visible.
+   */
+  .couvre {
+    position: static;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .couvre::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  /*
+   * L'appel « Lire le projet ». Ce n'est pas une seconde ancre : il n'y
+   * en a qu'une par carte, sur le titre, et son voile recouvre ce mot
+   * comme le reste. C'est le repère visuel de cette ancre-là — le trait
+   * s'appuie et la flèche part au survol de la carte entière, pas au
+   * survol du seul mot, parce que c'est la carte entière qui répond.
+   */
+  .lire {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--filet-fort);
+    transition:
+      border-color 220ms ease,
+      color 220ms ease;
+  }
+
+  .fleche {
+    display: inline-block;
+    transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .carte:hover .lire,
+  .carte:focus-within .lire {
+    color: var(--brun);
+    border-color: var(--brun);
+  }
+
+  .carte:hover .lire .fleche,
+  .carte:focus-within .lire .fleche {
+    transform: translateX(0.3rem);
+  }
+
+  /* ------------------------------------------- la page d'un projet */
+
+  /*
+   * Le récit d'une opération : le texte le plus long du site, et le
+   * seul qu'on lise en entier. Il est monté d'un cran au-dessus du
+   * corps courant, avec un interligne plus ouvert. En face de lui, la
+   * fiche technique est un cadre plein et bordé ; à corps égal, la
+   * fiche l'emportait toujours, alors qu'elle n'est qu'une liste de
+   * valeurs et qu'il est, lui, la matière de la page.
+   */
+  .recit {
+    font-size: 1.125rem;
+    line-height: 1.75;
+  }
+
+  /*
+   * Les deux projets voisins.
+   *
+   * C'est le seul endroit de la page où se joue la suite de la lecture,
+   * et il était le plus discret : trois <span> dont deux en ligne, si
+   * bien que la mention et le nom se retrouvaient sur la même ligne et
+   * collés — « · 2016Ateliers de la Fonderie » — le `mt-3` du nom
+   * n'ayant aucun effet entre deux boîtes de la même ligne. On les
+   * empile ici plutôt que dans le gabarit, et on leur donne le cadre
+   * qui leur manquait.
+   */
+  .voisin {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.4rem 1.5rem;
+    border: 1px solid var(--filet);
+    background: var(--blanc);
+    color: inherit;
+    text-decoration: none;
+    transition:
+      background-color 220ms ease,
+      border-color 220ms ease;
+  }
+
+  .voisin:hover,
+  .voisin:focus-visible {
+    background: var(--creme);
+    border-color: var(--filet-fort);
+  }
+
+  /* Le suivant est ferré à droite : la flèche reste du côté vers lequel
+     elle pointe, et les deux blocs encadrent la page. */
+  .voisin-suivant {
+    align-items: flex-end;
+    text-align: right;
+  }
+
+  .voisin .fleche {
+    color: var(--brun);
+  }
+
+  .voisin:hover .fleche-precedent,
+  .voisin:focus-visible .fleche-precedent {
+    transform: translateX(-0.3rem);
+  }
+
+  .voisin:hover .fleche-suivant,
+  .voisin:focus-visible .fleche-suivant {
+    transform: translateX(0.3rem);
+  }
+
+  /* Le bout de la série. Le cadre est en pointillé et vide : il tient
+     la place du voisin absent plutôt que de laisser la moitié de la
+     ligne en blanc, ce qui ferait lire l'autre comme centré. */
+  .voisin-vide {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    padding: 1.4rem 1.5rem;
+    border: 1px dashed var(--filet);
+  }
+
+  .voisin-vide.voisin-suivant {
+    justify-content: flex-end;
+  }
+
+  /* ---------------------------------------------------- le dessin */
+
+  /*
+   * La convention de dessin des architectes en transformation, tenue à
+   * l'identique sur les six planches — c'est elle qui rend lisible la
+   * distinction entre ce qui existait et ce que l'agence a fait :
+   *
+   *   .existant  trait fin continu   ce qui était là et qu'on garde
+   *   .depose    trait fin tireté    ce qui a été retiré
+   *   .projete   trait plein sombre  ce qui a été construit
+   *
+   * Les deux couleurs sont des variables pour qu'un survol de carte les
+   * bascule d'un seul coup, sans toucher au balisage.
+   */
+  .projete {
+    stroke: var(--trait-projete);
+    fill: none;
+    stroke-width: 1.9;
+    stroke-linecap: square;
+    stroke-linejoin: miter;
+    transition: stroke 260ms ease;
+  }
+
+  .projete-plein {
+    fill: var(--trait-projete);
+    stroke: none;
+    transition: fill 260ms ease;
+  }
+
+  .existant {
+    stroke: var(--trait-existant);
+    fill: none;
+    stroke-width: 1;
+    transition: stroke 260ms ease;
+  }
+
+  /* Le poché de l'existant : une masse très pâle qui donne du corps au
+     dessin sans jamais concurrencer le trait projeté. */
+  .existant-plein {
+    fill: var(--trait-existant);
+    stroke: none;
+    opacity: 0.18;
+    transition: fill 260ms ease;
+  }
+
+  .depose {
+    stroke: var(--trait-existant);
+    fill: none;
+    stroke-width: 0.9;
+    stroke-dasharray: 4 3;
+    opacity: 0.85;
+    transition: stroke 260ms ease;
+  }
+
+  .plan {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Sur la page d'un projet, la planche est un document qu'on lit de
+     près : l'existant peut donc être un peu plus appuyé qu'en vignette,
+     où il ne devait pas concurrencer le titre. */
+  .plan-net {
+    --trait-existant: #7a6a53;
+  }
+
+  .cote-dessin {
+    stroke: var(--trait-existant);
+    fill: none;
+    stroke-width: 0.6;
+  }
+
+  .texte-dessin {
+    font-family: var(--font-cote), ui-monospace, monospace;
+    font-size: 7px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    fill: var(--gris);
+    stroke: none;
+  }
+
+  /* Sur une carte, la planche est une vignette : ses annotations ne se
+     lisent plus et viennent concurrencer le titre. Elles ne servent que
+     sur la page du projet, où le dessin est un document. */
+  .carte-dessin .texte-dessin,
+  .carte-dessin .cote-dessin {
+    display: none;
+  }
+
+  /* La légende sous le dessin : elle en fait partie, elle n'en est pas
+     le commentaire. Filet fin à gauche, comme un renvoi de planche. */
+  .legende {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--gris);
+    border-left: 1px solid var(--filet-fort);
+    padding-left: 0.85rem;
+  }
+
+  /* ---------------------------------------------------------- champs */
+
+  .champ {
+    width: 100%;
+    min-height: 3rem;
+    background: var(--blanc);
+    border: 1px solid var(--bord-champ);
+    padding: 0.75rem 0.9rem;
+    font-family: var(--font-texte);
+    font-size: 1rem;
+    color: var(--encre);
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  .champ:hover {
+    border-color: var(--encre);
+  }
+
+  .champ:focus {
+    outline: none;
+    border-color: var(--encre);
+    box-shadow: inset 0 0 0 1px var(--encre);
+  }
+
+  .champ::placeholder {
+    color: var(--gris);
+  }
+
+  /* Le même rouge que le message qui l'accompagne. Il a été écrit en
+     dur ici pendant un temps, si bien que le site 13 affichait la
+     bordure chaude héritée du site 12 sous un message froid : deux
+     rouges pour un seul état. */
+  .champ[aria-invalid="true"] {
+    border-color: var(--erreur);
+    box-shadow: inset 0 0 0 1px var(--erreur);
+  }
+
+  /* ------------------------------------------------------ questions */
+
+  /* La FAQ est en <details> : elle s'ouvre sans JavaScript, elle est
+     imprimable, et le clavier la manipule sans un mot de code. */
+  .question > summary {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    cursor: pointer;
+    list-style: none;
+    padding: 1.4rem 0;
+    font-weight: 600;
+    font-size: clamp(1.02rem, 1.5vw, 1.14rem);
+    line-height: 1.4;
+    transition: color 180ms ease;
+  }
+
+  .question > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .question > summary:hover {
+    color: var(--brun);
+  }
+
+  /* Le signe : une croix qui devient un moins. Deux traits, pas d'image. */
+  .signe {
+    position: relative;
+    flex: none;
+    width: 1rem;
+    height: 1rem;
+    margin-top: 0.28rem;
+  }
+
+  .signe::before,
+  .signe::after {
+    content: "";
+    position: absolute;
+    inset: 50% 0 auto 0;
+    height: 1px;
+    background: currentColor;
+  }
+
+  .signe::after {
+    transform: rotate(90deg);
+    transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .question[open] .signe::after {
+    transform: rotate(0deg);
+  }
+
+  /* ------------------------------------------------- apparition */
+
+  /*
+   * Le mouvement est un supplément, jamais une condition d'affichage :
+   * tout est visible sans JavaScript. La classe `js-anime` n'est posée
+   * sur <html> que si le script tourne, et c'est elle seule qui masque
+   * l'état de départ.
+   */
+  .js-anime .paraitre {
+    opacity: 0;
+    transform: translateY(0.9rem);
+  }
+
+  .js-anime [data-vu="oui"] .paraitre {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 700ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: calc(var(--rang, 0) * 80ms);
+  }
+
+  /*
+   * L’impression.
+   *
+   * Une fiche de projet finit sur une table de réunion : c’est un usage
+   * réel, pas une hypothèse. Trois choses la gâchent, et sont réglées
+   * ici — le dégradé qui couvre la première page d’un aplat marron et
+   * vide une cartouche, les commandes d’écran qui n’ont aucun sens sur
+   * papier, et la fiche technique coupée en deux entre deux feuilles.
+   *
+   * Premier point d’abord : rien n’a jamais défilé à l’impression, donc
+   * l’observateur n’a rien révélé et la page sortirait à moitié blanche.
+   */
+  @media print {
+    .js-anime .paraitre {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+    }
+
+    /* Le papier est déjà blanc : le dégradé et les aplats chauds ne font
+       que consommer de l’encre et abaisser le contraste du texte. */
+    .degrade,
+    .saut {
+      display: none !important;
+    }
+
+    header,
+    footer,
+    .bg-creme,
+    .bg-brun-pale,
+    .bg-brun-pied {
+      background: #fff !important;
+    }
+
+    /* Ce qui ne sert qu’à l’écran : la navigation, le bouton du menu,
+       les appels à l’action. L’adresse, elle, reste. */
+    header nav,
+    header button,
+    .bouton {
+      display: none !important;
+    }
+
+    /* Le pied de page perd sa navigation, garde ses coordonnées. */
+    footer nav {
+      display: none !important;
+    }
+
+    /* Ce qui doit rester d’un seul tenant sur une feuille. */
+    figure,
+    .carte,
+    .question,
+    li {
+      break-inside: avoid;
+    }
+
+    h1,
+    h2,
+    h3 {
+      break-after: avoid;
+    }
+
+    /* La fiche technique et le cartouche des coordonnées : un cadre
+       coupé entre deux pages ne se lit plus comme un cadre. */
+    .border {
+      break-inside: avoid;
+    }
+
+    /* Un filet imprimé trop pâle disparaît : les séparateurs remontent
+       à une valeur qui tient à l’encre. */
+    .filet-haut,
+    .filet-bas,
+    .border,
+    .lire,
+    .voisin,
+    .voisin-vide {
+      border-color: #b3a48c !important;
+    }
+
+    /*
+     * Une feuille A4 fait environ 794 px de large : sous le seuil `lg`,
+     * donc toutes les grilles de la page passaient en une colonne et la
+     * fiche technique, devenue trop haute, se retrouvait rejetée seule
+     * sur une page. Au papier, on rétablit les deux colonnes — c'est
+     * d'ailleurs la disposition d'une vraie fiche d'opération.
+     */
+    .grille-fiche {
+      display: grid !important;
+      grid-template-columns: 1.45fr 1fr;
+      gap: 1.6rem;
+      align-items: start;
+    }
+
+    /* Dans une colonne de fiche large de six centimètres, une valeur
+       ferrée à droite qui passe à la ligne produit un bord gauche en
+       dents de scie. Sur papier, l'étiquette passe au-dessus et tout
+       est ferré à gauche. */
+    .ligne-fiche {
+      display: block !important;
+    }
+
+    .ligne-fiche dd {
+      text-align: left !important;
+    }
+
+    a {
+      text-decoration: none !important;
+    }
+
+    .lien::after {
+      display: none !important;
+    }
+  }
+
+  /* La ligne qui n’existe que sur le papier : de quoi rappeler d’où
+     vient la feuille qu’on a dans la main. */
+  .impression-seule {
+    display: none;
+  }
+
+  @media print {
+    .impression-seule {
+      display: block;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .js-anime .paraitre {
+      opacity: 1;
+      transform: none;
+    }
+
+    .js-anime [data-vu="oui"] .paraitre {
+      transition: none;
+    }
+
+    .carte-dessin,
+    .carte-dessin svg,
+    .lien::after,
+    .lire,
+    .fleche,
+    .voisin,
+    .bouton,
+    .champ,
+    .signe::after,
+    .projete,
+    .existant {
+      transition-duration: 1ms;
+    }
+  }
+
+  /* ------------------------------------------------------- divers */
+
+  .saut {
+    position: absolute;
+    left: var(--marge);
+    top: 0;
+    z-index: 60;
+    transform: translateY(-120%);
+    background: var(--encre);
+    color: var(--creme);
+    padding: 0.7rem 1.1rem;
+    font-size: 0.85rem;
+    transition: transform 160ms ease;
+  }
+
+  .saut:focus-visible {
+    transform: translateY(0.5rem);
+  }
+}

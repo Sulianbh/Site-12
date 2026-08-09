@@ -1,0 +1,56 @@
+# ---------------------------------------------------------------------
+# PASUPA• — site 12. Mise en ligne sur Netlify.
+#
+# Le site est entièrement statique : dix-huit routes préconstruites,
+# aucune fonction, aucune base de données, aucun appel réseau à
+# l'exécution. Le formulaire de rendez-vous ne poste nulle part — il
+# vérifie ses champs et affiche une confirmation, et il le dit. Il n'y a
+# donc rien à prévoir côté serveur.
+# ---------------------------------------------------------------------
+
+[build]
+  # NEXT_PUBLIC_SITE_URL est lue à la CONSTRUCTION, et elle décide de
+  # tout ce qui nomme le site : les canoniques, les adresses du plan du
+  # site, les `@id` des données structurées, l'origine de l'image Open
+  # Graph, et l'activation de HSTS. Sans elle, tout cela désigne
+  # `https://www.pasupa.fr` — un domaine fictif, choisi pour que la
+  # démonstration se tienne en local. Le site se déploierait sans une
+  # erreur et se référencerait de travers, ce qui est la pire des deux
+  # pannes : celle qui ne se voit pas.
+  #
+  # La substitution ci-dessous lui garantit une valeur juste en toute
+  # circonstance : celle posée dans les variables d'environnement du
+  # projet Netlify si elle existe, sinon `$URL`, que Netlify définit
+  # lui-même à l'adresse de production du site. Le domaine fictif n'est
+  # donc plus jamais atteint une fois en ligne.
+  command = "NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-$URL} npm run build"
+  publish = ".next"
+
+[build.environment]
+  # Épinglée. Next 16 exige Node 20.9 au minimum, et une construction
+  # qui change de version de Node d'un déploiement à l'autre n'est pas
+  # reproductible : c'est exactement le genre d'écart qui fait échouer
+  # un déploiement le jour de la présentation. Même valeur que `.nvmrc`,
+  # pour que le local et l'hébergeur disent la même chose.
+  NODE_VERSION = "22"
+
+# ---------------------------------------------------------------------
+# Ce qui n'est délibérément PAS ici
+#
+# Pas de bloc `[[headers]]`. Les en-têtes de sécurité — politique de
+# sécurité du contenu, `X-Robots-Tag`, HSTS, `Referrer-Policy` — sont
+# déclarés dans `next.config.ts`, parce que plusieurs d'entre eux
+# dépendent de conditions calculées à la construction (l'origine
+# est-elle en https, le site est-il indexable). Les répéter ici, c'est
+# créer deux sources de vérité qui divergeront.
+#
+# Après le premier déploiement, vérifier d'un `curl -I` qu'ils arrivent
+# bien :
+#
+#     curl -sI https://VOTRE-SITE.netlify.app/ | grep -i \
+#       'content-security-policy\|x-robots-tag\|strict-transport'
+#
+# S'ils manquent — ce qui arriverait si le site passait un jour en
+# export purement statique — il faudra alors les reporter dans un
+# fichier `public/_headers`, et ce fichier deviendra la source unique.
+# ---------------------------------------------------------------------

@@ -1,0 +1,35 @@
+{
+  "name": "pasupa-site-12",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3011",
+    "build": "next build",
+    "start": "next start -p 3011",
+    "lint": "eslint",
+    "coherence": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types scripts/coherence.mjs",
+    "verifier": "npm run lint && npm run typographie && npm run coherence && npm run build",
+    "typographie": "node scripts/typographie.mjs",
+    "audit": "node scripts/audit.mjs",
+    "semantique": "node scripts/semantique.mjs",
+    "liens": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types scripts/liens.mjs",
+    "robustesse": "node scripts/robustesse.mjs",
+    "clavier": "node scripts/clavier.mjs",
+    "verifier:rendu": "npm run audit && npm run semantique && npm run liens && npm run clavier && npm run robustesse"
+  },
+  "dependencies": {
+    "next": "16.2.12",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.12",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
