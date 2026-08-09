@@ -35,6 +35,20 @@
   NODE_VERSION = "22"
 
 # ---------------------------------------------------------------------
+# Le runtime Next, déclaré explicitement.
+#
+# Sur un projet relié à un dépôt git, Netlify détecte Next et installe ce
+# module de lui-même. Sur un déploiement par API ou par la CLI, il ne le
+# fait pas : le premier essai a publié `.next` comme un dossier statique
+# brut — `server/app/index.html` déposé sous ce chemin littéral, aucune
+# fonction, et la racine du site en 404. Le déclarer ici couvre les deux
+# cas, et ne coûte rien quand la détection aurait suffi.
+# ---------------------------------------------------------------------
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# ---------------------------------------------------------------------
 # Ce qui n'est délibérément PAS ici
 #
 # Pas de bloc `[[headers]]`. Les en-têtes de sécurité — politique de
