@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { PROJETS, projetParSlug, voisins } from "@/lib/projets";
 import { fil } from "@/lib/navigation";
 import { metadonnees, graphe, grapheProjet } from "@/lib/seo";
+import { photosDe, estPortrait } from "@/lib/photos";
+import Photographie from "@/components/Photo";
 import Schema from "@/components/Schema";
 import Matieres from "@/components/Matiere";
 import LegendeTrait from "@/components/LegendeTrait";
@@ -39,6 +41,8 @@ export default async function PageProjet({
   if (!projet) notFound();
 
   const { precedent, suivant } = voisins(slug);
+  /* La couverture ouvre la page ; le reste vient en galerie plus bas. */
+  const [couverture, ...suite] = photosDe(slug);
   const maillons = fil(
     { nom: "Projets", url: "/projets" },
     { nom: projet.nom, url: `/projets/${projet.slug}` },
@@ -66,8 +70,38 @@ export default async function PageProjet({
         </p>
       </div>
 
-      {/* ----------------------------------------------- le document */}
-      <div className="cadre" data-observe>
+      {/* ------------------------------------------ la vue en grand */}
+      {couverture && (
+        <div className="cadre" data-observe>
+          <Photographie
+            slug={projet.slug}
+            photo={couverture}
+            /* Pleine largeur de la colonne de lecture — sauf pour un
+               portrait, que le cadre rétrécit à 34rem. La valeur suit
+               le cadre : la donner à 62rem pour une image qui n’en
+               occupe que 34 ferait télécharger le fichier du dessus. */
+            sizes={
+              estPortrait(couverture)
+                ? "(width >= 64rem) 34rem, 96vw"
+                : "(width >= 64rem) 62rem, 96vw"
+            }
+            prioritaire
+            classe="paraitre cadre-photo-large"
+          />
+        </div>
+      )}
+
+      {/*
+        Le document dessiné.
+
+        Il reste, et il reste sous les photographies plutôt qu’à leur
+        place. Une photographie montre l’ouvrage fini ; elle ne dit pas
+        ce qui existait avant, ce qui a été déposé, ni ce que l’agence a
+        construit. C’est précisément ce que porte la planche, par sa
+        convention de trait — et c’est le seul endroit du site où la part
+        réelle de l’agence dans un bâtiment devient lisible.
+      */}
+      <div className="cadre mt-16 md:mt-20" data-observe>
         <figure className="paraitre">
           <div className="plan-net border border-filet-fort bg-creme px-4 py-6 md:px-10 md:py-10">
             <Schema slug={projet.slug} />
@@ -148,6 +182,37 @@ export default async function PageProjet({
           </div>
         </div>
       </section>
+
+      {/*
+        Le reste des photographies.
+
+        La couverture n’y figure pas : elle est déjà en tête de page, et
+        la revoir ici ferait douter qu’on ait avancé. La section n’existe
+        que s’il en reste au moins une.
+      */}
+      {suite.length > 0 && (
+        <section
+          aria-labelledby="photographies"
+          data-observe
+          className="cadre filet-haut py-14 md:py-16"
+        >
+          <h2 id="photographies" className="mention paraitre">
+            L’opération
+          </h2>
+          <div className="planches mt-6">
+            {suite.map((photo, i) => (
+              <Photographie
+                key={photo.fichier}
+                slug={projet.slug}
+                photo={photo}
+                sizes="(width >= 64rem) 30rem, 92vw"
+                classe="paraitre"
+                rang={i % 2}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* -------------------------------------------------- matières */}
       <section

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { PROJETS } from "@/lib/projets";
 import { fil } from "@/lib/navigation";
 import { metadonnees, graphe, grapheListeProjets } from "@/lib/seo";
+import { couvertureDe } from "@/lib/photos";
+import Photographie from "@/components/Photo";
 import Schema from "@/components/Schema";
 import FilDAriane from "@/components/FilDAriane";
 import AppelRdv from "@/components/AppelRdv";
@@ -29,8 +31,8 @@ export default function PageProjets() {
         </h1>
         <p className="chapo mt-6 max-w-[52ch] text-gris">
           De la première halle réhabilitée en 2016 à la halle de marché livrée
-          en mars 2026. Chaque opération est présentée par le document qui la
-          décrit le mieux — un plan ou une coupe — et par les chiffres qu’on
+          en mars 2026. Chaque opération est montrée en photographies, et par
+          le plan ou la coupe qui la décrit le mieux — plus les chiffres qu’on
           nous demande toujours : la surface, le montant des travaux, la durée
           du chantier.
         </p>
@@ -40,12 +42,30 @@ export default function PageProjets() {
         {PROJETS.map((p, i) => (
           <li key={p.slug} data-observe className="filet-haut py-16 md:py-24">
             <article className="carte relative grid gap-8 lg:grid-cols-12 lg:gap-12">
-              <div
-                className="carte-dessin paraitre lg:col-span-5"
-                style={{ "--rang": 0 } as React.CSSProperties}
-              >
-                <Schema slug={p.slug} />
-              </div>
+              {/* La couverture de l’opération. La première de la page
+                  n’est pas différée : c’est elle que le navigateur
+                  mesure comme plus grand élément affiché, et la différer
+                  la ferait arriver après tout le reste. */}
+              {(() => {
+                const couverture = couvertureDe(p.slug);
+                return couverture ? (
+                  <Photographie
+                    slug={p.slug}
+                    photo={couverture}
+                    sizes="(width >= 64rem) 30rem, 92vw"
+                    prioritaire={i === 0}
+                    classe="paraitre lg:col-span-5"
+                    rang={0}
+                  />
+                ) : (
+                  <div
+                    className="carte-dessin paraitre lg:col-span-5"
+                    style={{ "--rang": 0 } as React.CSSProperties}
+                  >
+                    <Schema slug={p.slug} />
+                  </div>
+                );
+              })()}
 
               <div
                 className="paraitre flex flex-col lg:col-span-6 lg:col-start-7"

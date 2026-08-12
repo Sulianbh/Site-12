@@ -444,6 +444,142 @@
     transform: scale(1.022);
   }
 
+  /* ------------------------------------------------ photographies */
+
+  /*
+   * Le cadre d'une photographie.
+   *
+   * Son rapport est celui du fichier, transmis en `--rapport` par le
+   * composant : le lot va de 2,517 pour le panoramique de la halle
+   * d'Ivry à 0,562 pour la charpente de la Fonderie, et aucun cadre
+   * unique n'accueille cet écart sans couper. Le 4/3 de repli ne sert
+   * qu'au cas où la variable manquerait.
+   *
+   * `object-fit: cover` reste en place et devient sans effet : quand le
+   * cadre a exactement le rapport de l'image, couvrir et contenir sont
+   * la même chose. La place est réservée avant l'arrivée du fichier,
+   * donc le décalage cumulé ne bouge pas.
+   */
+  .cadre-photo {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: var(--rapport, 4 / 3);
+    background: var(--creme);
+    border: 1px solid var(--filet);
+    transition: border-color 260ms ease;
+  }
+
+  .cadre-photo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /*
+   * Le survol. Sur une planche dessinée il s'obtenait en basculant deux
+   * variables de trait — le dessin lit les couleurs du contexte. Une
+   * photographie ne lit rien du tout : il faut un voile, posé en
+   * `::after` pour ne pas toucher au fichier, et brun parce que c'est
+   * l'accent de ce site-ci.
+   */
+  .cadre-photo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--brun);
+    opacity: 0;
+    transition: opacity 260ms ease;
+    pointer-events: none;
+  }
+
+  .carte:hover .cadre-photo,
+  .carte:focus-within .cadre-photo {
+    border-color: var(--filet-fort);
+  }
+
+  .carte:hover .cadre-photo::after,
+  .carte:focus-within .cadre-photo::after {
+    opacity: 0.16;
+  }
+
+  .carte:hover .cadre-photo img,
+  .carte:focus-within .cadre-photo img {
+    transform: scale(1.022);
+  }
+
+  /*
+   * La vue en grand, sur la page d'une opération : toute la largeur de
+   * la colonne — sauf pour un portrait. Un portrait de 1122 × 1402
+   * étalé sur la colonne ferait plus de mille pixels de haut, et le
+   * visiteur n'y verrait qu'un morceau de mur. On rétrécit le cadre
+   * plutôt que de couper l'image, et on le centre.
+   */
+  .cadre-photo-large.cadre-photo-portrait {
+    max-width: 34rem;
+    margin-inline: auto;
+  }
+
+  /*
+   * La vignette d'une carte — la seule exception à la règle du rapport.
+   *
+   * Les cartes vont par deux sur une même ligne et leurs titres doivent
+   * s'aligner. Laissé libre, le rapport du fichier donnait 188 px de
+   * haut à la halle d'Ivry et 590 à la surélévation, côte à côte : deux
+   * titres à quatre cents pixels l'un de l'autre, ce qui ne se lit plus
+   * comme une grille.
+   *
+   * Le cadre reprend donc une hauteur commune, mais l'image y est
+   * `contain` et non `cover` : elle n'est pas rognée, elle est posée en
+   * entier sur la crème, comme une photographie sur son carton de
+   * montage. Les deux classes sur le sélecteur, et pas seulement la
+   * seconde : `.cadre-photo img` pose `cover` à spécificité égale.
+   */
+  .cadre-photo.cadre-photo-vignette {
+    aspect-ratio: 4 / 3;
+  }
+
+  .cadre-photo.cadre-photo-vignette img {
+    object-fit: contain;
+  }
+
+  /* La suite des photographies, sur la page d'une opération. Deux
+     colonnes à partir de 40rem, une seule en dessous — une photo de
+     bâtiment sur une demi-largeur de téléphone ne montre plus rien. */
+  .planches {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+    /* Les cadres ont chacun leur rapport : sans cette ligne, la grille
+       les étire à la hauteur de leur rangée et le rapport ne s'applique
+       plus — les photographies se déformeraient au lieu d'être rognées,
+       ce qui est pire. */
+    align-items: start;
+  }
+
+  @media (width >= 40rem) {
+    .planches {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    /*
+     * L'orpheline de la dernière rangée.
+     *
+     * Une opération de quatre photographies en montre trois ici — la
+     * couverture est déjà en tête de page. Trois sur deux colonnes
+     * laissaient la dernière seule, calée à gauche, avec une demi-rangée
+     * de blanc à sa droite : ça se lit comme une image manquante plutôt
+     * que comme une fin de série. On la centre, à la largeur d'une
+     * colonne.
+     */
+    .planches > :last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+      width: calc(50% - 0.5rem);
+      justify-self: center;
+    }
+  }
+
   /* Le titre de la carte reprend le trait du lien : l'indication de
      cliquabilité vaut pour toute la carte, pas pour le seul mot. */
   .carte:hover .carte-titre::after,
@@ -950,6 +1086,9 @@
 
     .carte-dessin,
     .carte-dessin svg,
+    .cadre-photo,
+    .cadre-photo img,
+    .cadre-photo::after,
     .lien::after,
     .lire,
     .fleche,
