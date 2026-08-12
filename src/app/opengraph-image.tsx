@@ -1,6 +1,12 @@
 import { ImageResponse } from "next/og";
 import { AGENCE } from "@/lib/agence";
 
+/*
+ * `output: "export"` exige que toute route se déclare calculable une
+ * fois pour toutes : sans cette ligne, la construction s’arrête ici.
+ */
+export const dynamic = "force-static";
+
 /**
  * L’image de partage.
  *

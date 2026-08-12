@@ -1,6 +1,12 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/agence";
 
+/*
+ * `output: "export"` exige que toute route se déclare calculable une
+ * fois pour toutes : sans cette ligne, la construction s’arrête ici.
+ */
+export const dynamic = "force-static";
+
 /**
  * Rien n’est interdit ici, et c’est délibéré.
  *

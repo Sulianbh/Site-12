@@ -1,5 +1,11 @@
 import { ImageResponse } from "next/og";
 
+/*
+ * `output: "export"` exige que toute route se déclare calculable une
+ * fois pour toutes : sans cette ligne, la construction s’arrête ici.
+ */
+export const dynamic = "force-static";
+
 /**
  * L’icône de l’écran d’accueil iOS.
  *

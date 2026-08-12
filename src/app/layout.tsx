@@ -54,7 +54,28 @@ export const metadata: Metadata = {
   authors: [{ name: AGENCE.nomLong }],
   creator: AGENCE.nomLong,
   alternates: { canonical: "/" },
-  robots: { index: true, follow: true },
+  /*
+   * Le `noindex` voyage ici, dans le HTML, en plus de l’en-tête
+   * `X-Robots-Tag` que pose `next.config.ts`.
+   *
+   * Ce n’est pas une redondance oisive : sur GitHub Pages, l’en-tête
+   * n’existe pas — l’hébergeur ne sert que des fichiers et n’offre
+   * aucun moyen d’en ajouter un. Cette page se déclarait `index: true`,
+   * ce qui contredisait l’en-tête et devenait la seule consigne servie
+   * une fois l’en-tête disparu : le site aurait été indexable sous
+   * `sulianbh.github.io`, qui est un domaine réel. Une agence inventée,
+   * avec une adresse, un numéro RCS et un numéro d’inscription à
+   * l’Ordre tout aussi inventés, n’a rien à faire dans un moteur de
+   * recherche — quelqu’un qui cherche un architecte à Paris n’aurait
+   * aucun moyen de savoir que c’est une démonstration.
+   *
+   * `NEXT_PUBLIC_INDEXABLE=oui` lève les deux d’un coup, le jour où ce
+   * gabarit portera le nom d’une agence réelle.
+   */
+  robots:
+    process.env.NEXT_PUBLIC_INDEXABLE === "oui"
+      ? { index: true, follow: true }
+      : { index: false, follow: true },
   formatDetection: { telephone: false },
 };
 

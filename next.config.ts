@@ -66,7 +66,33 @@ const csp = [
   ...(httpsOrigin ? ["upgrade-insecure-requests"] : []),
 ].join("; ");
 
+/**
+ * L'export statique et le préfixe d'URL, tous deux facultatifs.
+ *
+ * Le site se construisait pour le runtime Next de Netlify, servi à la
+ * racine d'un domaine, et `headers()` plus bas y appliquait la politique
+ * de sécurité. Ce chemin-là reste possible : sans les variables
+ * ci-dessous, rien ne change.
+ *
+ * Mais l'hébergement passe sur GitHub Pages, qui ne sait que servir des
+ * fichiers plats. Il faut donc un export, et un préfixe, puisqu'un site
+ * de projet y vit sous le nom du dépôt et non à la racine du domaine.
+ * Les deux sont commandés par des variables posées uniquement par
+ * l'intégration continue.
+ *
+ * Ce qu'un export perd, et qu'il faut savoir : `headers()` cesse d'être
+ * appliqué. La politique de sécurité du contenu disparaît donc sur
+ * Pages, qui n'offre aucun moyen de la rétablir. Le `noindex`, lui, est
+ * rattrapé : il est aussi déclaré en métadonnée dans la mise en page
+ * racine, où il voyage dans le HTML plutôt que dans un en-tête.
+ */
+const exportStatique = process.env.EXPORT_STATIQUE === "oui";
+const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
 const nextConfig: NextConfig = {
+  ...(exportStatique ? { output: "export" as const } : {}),
+  basePath: base,
+  assetPrefix: base || undefined,
   poweredByHeader: false,
   reactStrictMode: true,
 
