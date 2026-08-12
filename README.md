@@ -105,40 +105,61 @@ exempte `localhost`, Chromium l'applique, WebKit non.
 
 ## Mettre en ligne
 
-Netlify, par le dépôt git. `netlify.toml` déclare tout : la commande, le
-dossier publié et la version de Node (épinglée à 22, la même que
-`.nvmrc`). Rien à régler dans l'interface, à une exception près, ci-dessous.
+GitHub Pages, par le dépôt git. `.github/workflows/pages.yml` déclare
+tout : la vérification, la construction et la publication, à chaque
+poussée sur `main`. Rien à régler dans l'interface — Pages a été activé
+une fois par l'API en mode `workflow`.
 
 Le site est **entièrement statique** — dix-huit routes préconstruites,
 aucune fonction, aucune base, aucun appel réseau à l'exécution, et un
-formulaire qui ne poste nulle part et le dit. Il n'y a donc rien à
-prévoir côté serveur.
+formulaire qui ne poste nulle part et le dit. C'est ce qui rend Pages
+possible : cet hébergeur ne sait servir que des fichiers.
 
-### La seule variable qui compte
+L'hébergement était sur Netlify jusqu'au 13 août 2026. Il en est parti
+faute de crédits de construction sur le compte, et les projets Netlify
+ont été supprimés. `netlify.toml` a disparu avec eux ; il reste dans
+l'historique git si le chemin devait servir de nouveau.
 
-`NEXT_PUBLIC_SITE_URL` est lue **à la construction**, et elle nomme tout :
-canoniques, plan du site, `@id` des données structurées, origine de
-l'image Open Graph, activation de HSTS. Sans elle, tout cela désigne
-`https://www.pasupa.fr`, le domaine fictif de la démonstration : le site
-se déploierait sans une erreur et se référencerait de travers, ce qui est
-la pire des deux pannes.
+### Les trois variables de construction
 
-La commande de construction s'en prémunit :
+Elles ne sont posées que par le workflow. En local, `npm run build` et
+`npm run start` se comportent comme si elles n'existaient pas.
 
-```toml
-command = "NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-$URL} npm run build"
-```
+| variable | rôle |
+| --- | --- |
+| `EXPORT_STATIQUE=oui` | écrit un dossier `out/` de fichiers plats |
+| `NEXT_PUBLIC_BASE_PATH=/<dépôt>` | préfixe les URL, un site de projet ne vivant pas à la racine du domaine |
+| `NEXT_PUBLIC_SITE_URL` | nomme canoniques, plan du site, `@id` des données structurées et image Open Graph |
 
-La variable posée dans le projet Netlify l'emporte ; à défaut, c'est
-`$URL`, que Netlify définit lui-même à l'adresse de production. Le
-domaine fictif n'est donc jamais atteint en ligne. Les deux cas ont été
-éprouvés avant le premier déploiement.
+`NEXT_PUBLIC_SITE_URL` est la plus dangereuse des trois : sans elle,
+tout cela désignerait `https://www.pasupa.fr`, le domaine fictif de la
+démonstration. Le site se déploierait sans une erreur et se
+référencerait de travers, ce qui est la pire des deux pannes. Le
+workflow la déduit du propriétaire et du nom du dépôt, donc le domaine
+fictif n'est jamais atteint en ligne.
+
+### Ce qu'un export perd
+
+`headers()` cesse d'être appliqué : **la politique de sécurité du
+contenu n'existe pas sur Pages**, qui n'offre aucun moyen de poser un
+en-tête. C'est le prix du gratuit, et il est écrit ici plutôt que
+découvert plus tard.
+
+Le `noindex`, lui, est rattrapé : il est aussi déclaré en métadonnée
+dans la mise en page racine, où il voyage dans le HTML. C'est
+d'ailleurs cette balise, et non l'en-tête, qui protège réellement le
+site aujourd'hui.
 
 ### Le site n'est pas indexable, et c'est voulu
 
 L'agence, ses associés, ses six opérations, son adresse, son numéro
-d'ordre et son numéro RCS sont inventés. `next.config.ts` pose donc
-`X-Robots-Tag: noindex, follow` sur toutes les adresses.
+d'ordre et son numéro RCS sont inventés. Deux consignes le disent : la
+balise `robots` de la mise en page racine, qui voyage dans le HTML, et
+l'en-tête `X-Robots-Tag: noindex, follow` que pose `next.config.ts`.
+
+Sur GitHub Pages, **seule la balise est servie** — l'hébergeur n'émet
+aucun en-tête. C'est donc elle qui protège le site, et l'en-tête ne
+reprend son rôle que sur un hébergeur qui exécute Next.
 
 C'est un en-tête et non un `Disallow` de `robots.txt`, pour la raison
 déjà exposée dans `src/app/robots.ts` : un robot qui respecte
@@ -159,7 +180,7 @@ Le runtime Next de Netlify est censé les appliquer ; ça se vérifie d'une
 ligne :
 
 ```bash
-curl -sI https://VOTRE-SITE.netlify.app/ \
+curl -sI https://VOTRE-COMPTE.github.io/VOTRE-DEPOT/ \
   | grep -i 'content-security-policy\|x-robots-tag\|strict-transport'
 ```
 
