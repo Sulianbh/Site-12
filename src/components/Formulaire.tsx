@@ -32,6 +32,13 @@ const NATURES = [
   "Je ne sais pas encore",
 ];
 
+/* La valeur par défaut, nommée et non pointée du doigt par son rang.
+   `NATURES[3]` désignait la bonne entrée, mais réordonner la liste
+   aurait changé le défaut sans que rien ne le signale. C’est aussi le
+   choix juste : présélectionner « Construction neuve » ferait répondre
+   à la place de la personne. */
+const NATURE_PAR_DEFAUT = "Je ne sais pas encore";
+
 export default function Formulaire() {
   const id = useId();
   const form = useRef<HTMLFormElement>(null);
@@ -188,7 +195,7 @@ export default function Formulaire() {
             id={champId("nature")}
             name="nature"
             className="champ mt-2"
-            defaultValue={NATURES[3]}
+            defaultValue={NATURE_PAR_DEFAUT}
           >
             {NATURES.map((n) => (
               <option key={n}>{n}</option>
@@ -234,10 +241,21 @@ export default function Formulaire() {
 
       <div>
         <div className="flex items-start gap-3">
+          {/*
+            `required` comme sur les trois autres champs obligatoires.
+            Il manquait ici : `verifier()` refusait pourtant l’envoi sans
+            cette case. L’astérisque le disait à l’œil, la validation le
+            disait après coup, mais l’arbre d’accessibilité ne le disait
+            pas — un lecteur d’écran annonçait « case à cocher » là où il
+            annonce « obligatoire » pour les trois autres. Le formulaire
+            portant `noValidate`, l’attribut ne change rien au
+            comportement : il ne fait que rendre l’exigence annonçable.
+          */}
           <input
             id={champId("accord")}
             name="accord"
             type="checkbox"
+            required
             aria-invalid={erreurs.accord ? true : undefined}
             aria-describedby={erreurs.accord ? erreurId("accord") : undefined}
             className="mt-0.5 h-6 w-6 shrink-0 accent-[#241d17]"

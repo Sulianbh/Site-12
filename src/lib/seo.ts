@@ -16,13 +16,35 @@ import { PROJETS } from "./projets";
 /**
  * La carte de partage, désignée explicitement.
  *
- * Le fichier `opengraph-image.tsx` ne s’attache qu’au segment de route
- * où il vit : dès qu’une page déclare son propre bloc `openGraph`, elle
- * cesse d’en hériter et se partage sans aperçu. On la nomme donc à la
- * main, pour les six pages à la fois.
+ * Deux raisons de la nommer à la main plutôt que de laisser Next s’en
+ * charger.
+ *
+ * La première tient au segment : `opengraph-image.tsx` ne s’attache qu’à
+ * celui où il vit, et dès qu’une page déclare son propre bloc
+ * `openGraph`, elle cesse d’en hériter et se partage sans aperçu.
+ *
+ * La seconde tient à l’hébergeur, et elle a coûté l’aperçu de partage du
+ * site en ligne. En export statique, la route `opengraph-image` produit
+ * un fichier **sans extension**. GitHub Pages déduit le type MIME de
+ * l’extension : n’en trouvant aucune, il servait un PNG parfaitement
+ * valide en `application/octet-stream`, et plusieurs réseaux refusent
+ * d’afficher une image annoncée ainsi. Le fichier existait, l’aperçu
+ * tombait quand même.
+ *
+ * On sert donc un vrai `.png` depuis `public/`, dont l’extension ne
+ * laisse aucune place à la déduction, et on déclare son type. Le préfixe
+ * est indispensable : `basePath` ne touche pas à une chaîne écrite à la
+ * main.
+ *
+ * `src/app/opengraph-image.tsx` reste le générateur de ce fichier — c’est
+ * de lui que `public/partage.png` a été tiré, et c’est lui qu’il faut
+ * modifier puis réexporter pour changer la carte.
  */
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
 const CARTE = {
-  url: "/opengraph-image",
+  url: `${BASE}/partage.png`,
+  type: "image/png",
   width: 1200,
   height: 630,
   alt: `${AGENCE.nomLong} — ${AGENCE.these}`,

@@ -29,7 +29,7 @@
  *     node scripts/liens.mjs [http://localhost:3011]
  */
 
-import { chromium } from "/Users/sulianbrouard-heulluy/.npm/_npx/705bc6b22212b352/node_modules/playwright/index.mjs";
+import { chromium } from "playwright";
 
 const BASE = process.argv.find((a) => a.startsWith("http")) ?? "http://localhost:3011";
 const constats = {
@@ -50,14 +50,31 @@ const plan = [...(await (await fetch(BASE + "/sitemap.xml")).text())
   .matchAll(/<loc>([^<]+)<\/loc>/g)]
   .map((m) => new URL(m[1]).pathname);
 
-if (!plan.length) {
-  console.error("Le plan du site est vide ou illisible — rien à vérifier.");
-  process.exit(1);
-}
+/*
+ * Le plan du site n'est pas toujours la bonne amorce.
+ *
+ * Tant que la démonstration n'est pas indexable, le plan est
+ * délibérément vide : un plan qui listerait des pages en « noindex »
+ * serait démenti ligne à ligne. Ce script partait pourtant de lui, et
+ * s'arrêtait alors sur « rien à vérifier » — après avoir vérifié 297
+ * liens sur 13 pages la veille. Le pire des cas est celui-là : un
+ * vérificateur qui ne trouve rien parce qu'il n'a rien regardé.
+ *
+ * On repart donc de la racine quand le plan est vide. Les deux amorces
+ * convergent : le script suit ensuite chaque lien de chaque page, et la
+ * fermeture transitive est la même.
+ */
+const amorce = plan.length ? plan : ["/"];
+
+if (!plan.length)
+  console.log(
+    "  plan du site vide (démonstration non indexable) — " +
+      "amorce prise sur la racine",
+  );
 
 /* La 404 n'est pas au plan, et c'est normal : elle est en noindex. On
    la visite quand même, ses liens comptent autant que les autres. */
-const AVISITER = [...plan, "/cette-adresse-nexiste-pas"];
+const AVISITER = [...amorce, "/cette-adresse-nexiste-pas"];
 
 /* ------------------------------------------------------------------ */
 /*  Récolte                                                            */

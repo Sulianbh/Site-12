@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AGENCE, DERNIERE_MISE_A_JOUR } from "@/lib/agence";
+import { AGENCE, DERNIERE_MISE_A_JOUR, SITE_URL } from "@/lib/agence";
 import { MENU, PIED } from "@/lib/navigation";
 
 /**
@@ -92,9 +92,17 @@ export default function Pied() {
             © {annee} {AGENCE.nomLong}. {AGENCE.ordre}.
           </p>
           {/* Sur une feuille posée sur une table, plus rien ne dit d’où
-              elle vient : cette ligne ne s’imprime que là. */}
+              elle vient : cette ligne ne s’imprime que là.
+
+              L’adresse était écrite en dur — `www.pasupa.fr` — alors que
+              le site est servi ailleurs. Une page imprimée donnait donc
+              une adresse qui ne mène nulle part, ce qui est exactement
+              le contraire de ce que cette ligne existe pour faire. Elle
+              est maintenant dérivée de `SITE_URL`, sans son protocole,
+              qu’on ne recopie pas d’une feuille de papier. */}
           <p className="impression-seule">
-            www.pasupa.fr · {AGENCE.telephone} · {AGENCE.courriel}
+            {SITE_URL.replace(/^https?:\/\//, "")} · {AGENCE.telephone} ·{" "}
+            {AGENCE.courriel}
           </p>
           <p>
             Site de démonstration — agence, projets et personnes entièrement

@@ -1,4 +1,8 @@
-import { AGENCE, DERNIERE_MISE_A_JOUR } from "@/lib/agence";
+import {
+  AGENCE,
+  DERNIERE_MISE_A_JOUR,
+  DERNIERE_MISE_A_JOUR_FR,
+} from "@/lib/agence";
 import { fil } from "@/lib/navigation";
 import { metadonnees, graphe } from "@/lib/seo";
 import FilDAriane from "@/components/FilDAriane";
@@ -53,9 +57,11 @@ export default function PageMentions() {
           <section>
             <h2 className="mention mention-encre">Hébergement</h2>
             <p className="mt-3 leading-relaxed text-gris">
-              Le site est destiné à être hébergé sur une plateforme
-              d’hébergement statique. L’identité et les coordonnées
-              de l’hébergeur sont à compléter à la mise en ligne.
+              Le site est hébergé par GitHub, Inc., 88 Colin P. Kelly Jr.
+              Street, San Francisco, CA 94107, États-Unis, sur le service
+              GitHub Pages. Il s’agit d’un hébergement de fichiers
+              statiques : aucune donnée n’y est enregistrée, et le site
+              n’exécute aucun traitement côté serveur.
             </p>
           </section>
 
@@ -94,7 +100,10 @@ export default function PageMentions() {
           </section>
 
           <p className="mention pt-4 text-gris">
-            Dernière mise à jour : {DERNIERE_MISE_A_JOUR}
+            Dernière mise à jour :{" "}
+            <time dateTime={DERNIERE_MISE_A_JOUR}>
+              {DERNIERE_MISE_A_JOUR_FR}
+            </time>
           </p>
         </div>
       </div>

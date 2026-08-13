@@ -20,7 +20,7 @@ import { MENU } from "@/lib/navigation";
  * Il n’y a délibérément pas de `global-error.tsx`. Celui-là ne sert que
  * si la mise en page racine elle-même échoue, et il doit alors réémettre
  * ses propres `<html>` et `<body>` — donc sans les polices, sans la
- * feuille de style, sans rien. Pour dix-sept routes statiques dont la
+ * feuille de style, sans rien. Pour dix-neuf routes statiques dont la
  * racine ne fait que composer trois composants, le cas ne se présente
  * pas ; et un écran de secours qu’on ne peut pas éprouver est un écran
  * dont on ne sait rien.

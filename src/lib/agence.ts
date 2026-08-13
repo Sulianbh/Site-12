@@ -48,13 +48,40 @@ export const SITE_URL = (
  * elle que le pied de page date : annoncer une modification qui n’a pas
  * eu lieu apprend au moteur à ne plus croire ce champ.
  */
-export const DERNIERE_MISE_A_JOUR = "2026-08-09";
+export const DERNIERE_MISE_A_JOUR = "2026-08-13";
+
+/**
+ * La même date, écrite pour un lecteur.
+ *
+ * Le format ISO sert aux machines — `lastmod` du plan du site,
+ * attribut `datetime`. Il ne s’affiche pas : « 2026-08-13 » est une
+ * chaîne de base de données, pas une date française. C’est pourtant
+ * elle que les mentions légales montraient, quand les versions « avant »
+ * de cette démonstration, volontairement laides, écrivaient au moins
+ * « 09/08/2026 ».
+ *
+ * Construite à la main plutôt que par `toLocaleDateString` : le rendu
+ * doit être identique sur le serveur et dans le navigateur, sans quoi
+ * React signale une divergence d’hydratation — et le résultat de
+ * `toLocaleDateString` dépend des données de langue de la plateforme,
+ * qui ne sont pas les mêmes des deux côtés.
+ */
+const MOIS_FR = [
+  "janvier", "février", "mars", "avril", "mai", "juin",
+  "juillet", "août", "septembre", "octobre", "novembre", "décembre",
+];
+
+export const DERNIERE_MISE_A_JOUR_FR = (() => {
+  const [a, m, j] = DERNIERE_MISE_A_JOUR.split("-").map(Number);
+  /* Le premier du mois prend « 1er », les autres leur seul nombre. */
+  return `${j === 1 ? "1er" : j} ${MOIS_FR[m - 1]} ${a}`;
+})();
 
 /* ------------------------------------------------------------------ */
 /*  Chiffres clés — des nombres, pas des adjectifs                     */
 /* ------------------------------------------------------------------ */
 
-export interface Chiffre {
+interface Chiffre {
   valeur: string;
   libelle: string;
   precision: string;
@@ -90,7 +117,7 @@ export const CHIFFRES: Chiffre[] = [
 /*  Les trois règles — la façon de faire, sur la page d’accueil        */
 /* ------------------------------------------------------------------ */
 
-export interface Regle {
+interface Regle {
   numero: string;
   titre: string;
   texte: string;
@@ -121,7 +148,7 @@ export const REGLES: Regle[] = [
 /*  La frise — le parcours de l’agence, année par année                */
 /* ------------------------------------------------------------------ */
 
-export interface Etape {
+interface Etape {
   annee: string;
   titre: string;
   texte: string;
@@ -185,7 +212,7 @@ export const FRISE: Etape[] = [
 /*  L’équipe — neuf personnes                                          */
 /* ------------------------------------------------------------------ */
 
-export interface Membre {
+interface Membre {
   nom: string;
   role: string;
   depuis: number;

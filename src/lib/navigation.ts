@@ -7,7 +7,7 @@
  * les mentions légales au pied de page, où on les cherche.
  */
 
-export interface Entree {
+interface Entree {
   libelle: string;
   href: string;
   /** Sert à l’attribut `title` du lien et aux données structurées. */

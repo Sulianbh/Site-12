@@ -8,7 +8,18 @@ import { AGENCE } from "@/lib/agence";
 export const dynamic = "force-static";
 
 /**
- * L’image de partage.
+ * L’image de partage — le générateur.
+ *
+ * Ce fichier n’est plus ce que les réseaux vont chercher : ils reçoivent
+ * `public/partage.png`, désigné par `src/lib/seo.ts`. La raison est
+ * l’hébergeur. En export statique, cette route produit un fichier **sans
+ * extension** ; GitHub Pages déduit le type MIME de l’extension et
+ * servait donc un PNG valide en `application/octet-stream`, que
+ * plusieurs réseaux refusent d’afficher.
+ *
+ * Il reste ici parce qu’il est la source de cette image : pour changer
+ * la carte, on modifie ce composant, on construit, et on remplace
+ * `public/partage.png` par ce que la route a produit.
  *
  * Une adresse collée dans une messagerie n’affiche que ce qu’on lui a
  * préparé. Sans cette image, le site le mieux composé se réduit à un

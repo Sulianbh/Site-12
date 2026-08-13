@@ -84,7 +84,7 @@ export const MATIERES: Record<CleMatiere, Matiere> = {
 
 export type Nature = "Réhabilitation" | "Construction neuve" | "Surélévation";
 
-export interface LigneFiche {
+interface LigneFiche {
   libelle: string;
   valeur: string;
 }

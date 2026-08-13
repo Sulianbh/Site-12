@@ -25,7 +25,7 @@
  *     node scripts/semantique.mjs [http://localhost:3011]
  */
 
-import { chromium } from "/Users/sulianbrouard-heulluy/.npm/_npx/705bc6b22212b352/node_modules/playwright/index.mjs";
+import { chromium } from "playwright";
 
 const BASE = process.argv.find((a) => a.startsWith("http")) ?? "http://localhost:3011";
 
@@ -302,11 +302,68 @@ const MESURER = () => {
 
 const plan = [...(await (await fetch(BASE + "/sitemap.xml")).text())
   .matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]).pathname);
-const PAGES = [...plan, "/mentions-legales", "/cette-adresse-nexiste-pas"];
 
 const nav = await chromium.launch();
 const ctx = await nav.newContext({ viewport: { width: 1280, height: 900 } });
 const page = await ctx.newPage();
+
+/**
+ * Les pages à examiner.
+ *
+ * Le plan du site est l'amorce naturelle — c'est la liste que le site
+ * publie de lui-même. Mais tant que la démonstration n'est pas
+ * indexable, ce plan est délibérément vide : un plan qui listerait des
+ * pages en « noindex » serait démenti ligne à ligne.
+ *
+ * Sans repli, ce script examinait alors deux pages sur douze — et
+ * concluait « aucun constat ». C'est le pire mode de défaillance d'un
+ * vérificateur : ne rien trouver parce qu'on n'a rien regardé. Le repli
+ * relève donc les liens internes réellement servis, ce qui redonne la
+ * même couverture sans qu'aucune liste ne soit écrite à la main quelque
+ * part — une liste écrite à la main finit toujours par oublier la page
+ * ajoutée le mois dernier.
+ */
+async function pagesDuSite() {
+  if (plan.length) return plan;
+
+  const liensDe = async (chemin) => {
+    await page.goto(BASE + chemin, { waitUntil: "networkidle" });
+    return page.evaluate(
+      (base) => [
+        ...new Set(
+          [...document.querySelectorAll("a[href]")]
+            .map((a) => a.href)
+            .filter((h) => h.startsWith(base))
+            .map((h) => new URL(h).pathname),
+        ),
+      ],
+      BASE,
+    );
+  };
+
+  /* Deux passes, et pas une. L'accueil ne met en avant que quatre des
+     six opérations : à une seule passe, deux pages de projet manquaient
+     à l'appel sans que rien ne le signale. La seconde passe part de ce
+     que la première a trouvé — dont la liste des projets, qui les porte
+     toutes. */
+  const vues = new Set(await liensDe("/"));
+  for (const chemin of [...vues])
+    for (const l of await liensDe(chemin)) vues.add(l);
+
+  console.log(
+    `  plan du site vide (démonstration non indexable) — ` +
+      `${vues.size} pages relevées en suivant les liens`,
+  );
+  return [...vues];
+}
+
+const PAGES = [
+  ...new Set([
+    ...(await pagesDuSite()),
+    "/mentions-legales",
+    "/cette-adresse-nexiste-pas",
+  ]),
+];
 
 const jsonldParPage = [];
 

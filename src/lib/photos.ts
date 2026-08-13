@@ -46,7 +46,11 @@ export interface Photo {
   texte: string;
 }
 
-export const PHOTOS: Record<string, Photo[]> = {
+/* Non exporté : deux accesseurs suffisent au reste du site, et laisser
+   la table nue à disposition invite à la parcourir ailleurs qu’ici —
+   c’est ainsi qu’une seconde façon de lire les mêmes données finit par
+   diverger de la première. */
+const PHOTOS: Record<string, Photo[]> = {
   "ateliers-de-la-fonderie-montreuil": [
     {
       fichier: "05",

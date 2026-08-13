@@ -87,6 +87,37 @@ export default function Entete() {
     };
   }, [ouvert]);
 
+  /*
+   * Refermer le menu quand la fenêtre passe en disposition large.
+   *
+   * `lg:hidden` masque le voile *et* son bouton de fermeture au-delà de
+   * 64rem, mais ne touche pas à l’état React : le menu restait donc
+   * « ouvert » pour le composant, et l’effet ci-dessus gardait
+   * `overflow: hidden` sur le corps du document. Résultat mesuré : à
+   * 1440 px, plus rien à cliquer et une page de 4530 px qui refuse de
+   * défiler. Seule la touche Échap libérait — c’est-à-dire personne, sur
+   * une tablette qu’on fait pivoter du portrait au paysage.
+   *
+   * On n’écoute que l’événement `change`, jamais l’état initial : le
+   * menu ne peut s’ouvrir que sous 64rem, puisque son bouton n’existe
+   * pas au-dessus. Lire la valeur au montage n’apprendrait donc rien, et
+   * appeler `setState` dans le corps d’un effet est ce que la règle du
+   * compilateur React interdit.
+   *
+   * `min-width` et non la syntaxe d’intervalle : une requête que le
+   * navigateur ne sait pas analyser ne correspond jamais, et la panne
+   * qu’on corrige ici reviendrait en silence.
+   */
+  useEffect(() => {
+    if (!ouvert) return;
+    const large = window.matchMedia("(min-width: 64rem)");
+    const surElargissement = () => {
+      if (large.matches) setOuvertPour(null);
+    };
+    large.addEventListener("change", surElargissement);
+    return () => large.removeEventListener("change", surElargissement);
+  }, [ouvert]);
+
   /* L’accueil ne doit correspondre qu’à lui-même ; les autres entrées
      couvrent aussi leurs pages filles (/projets/maison-a-cour…). */
   const courant = (href: string) =>

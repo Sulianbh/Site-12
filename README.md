@@ -110,7 +110,7 @@ tout : la vérification, la construction et la publication, à chaque
 poussée sur `main`. Rien à régler dans l'interface — Pages a été activé
 une fois par l'API en mode `workflow`.
 
-Le site est **entièrement statique** — dix-huit routes préconstruites,
+Le site est **entièrement statique** — dix-neuf routes préconstruites,
 aucune fonction, aucune base, aucun appel réseau à l'exécution, et un
 formulaire qui ne poste nulle part et le dit. C'est ce qui rend Pages
 possible : cet hébergeur ne sait servir que des fichiers.

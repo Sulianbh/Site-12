@@ -17,6 +17,12 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Les actions sont épinglées par empreinte de commit et non par
+# étiquette. Une étiquette se déplace : `@v4` désigne aujourd'hui un
+# commit, demain un autre, et ce job détient `pages: write` et
+# `id-token: write` — de quoi publier le site et signer une identité.
+# Le commentaire garde l'étiquette lisible ; c'est l'empreinte qui
+# s'exécute.
 permissions:
   contents: read
   pages: write
@@ -29,12 +35,69 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  construire:
+  # ------------------------------------------------------------------
+  # Les vérifications de rendu, sur une construction ordinaire.
+  #
+  # Elles ne tournaient nulle part. Les cinq scripts qui les portent
+  # importaient Playwright par un chemin absolu vers un cache npx : ils
+  # ne fonctionnaient que sur la machine où ils avaient été écrits, et
+  # le workflow ne les appelait pas. Tout l'argument qualité du dépôt
+  # reposait donc sur des outils qu'aucune machine n'exécutait
+  # automatiquement.
+  #
+  # La construction est ici la construction *ordinaire*, sans
+  # `EXPORT_STATIQUE` ni préfixe : les scripts attendent un site servi à
+  # la racine par `next start`. C'est la même source que celle publiée,
+  # et c'est ce qu'on veut vérifier — la mise en page, les liens, le
+  # clavier, le poids ne dépendent pas du mode d'export.
+  # ------------------------------------------------------------------
+  verifier:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Installer
+        run: npm ci
+
+      # Le paquet npm n'apporte pas les navigateurs : il faut les
+      # télécharger, et seulement Chromium — les scripts n'en ouvrent
+      # pas d'autre.
+      - name: Installer Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Construire pour la vérification
+        run: npm run build
+
+      # Servir et vérifier dans la même étape : un processus lancé en
+      # arrière-plan dans une étape précédente ne survit pas de façon
+      # garantie à la suivante. L'attente se fait à la boucle et au
+      # `curl` plutôt qu'avec un paquet d'attente — en installer un
+      # rejouerait la dépendance non déclarée qu'on vient de supprimer.
+      - name: Vérifier le rendu
+        run: |
+          npm run start &
+          for i in $(seq 1 40); do
+            curl -sf -o /dev/null http://127.0.0.1:3011/ && break
+            sleep 2
+          done
+          curl -sf -o /dev/null http://127.0.0.1:3011/ || {
+            echo "::error::le serveur n'a pas répondu sur le port 3011"
+            exit 1
+          }
+          npm run verifier:rendu
+
+  construire:
+    needs: verifier
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -48,7 +111,7 @@ jobs:
       # fait tomber la première exécution. Pages a donc été activé une
       # fois par l'API avec un jeton d'utilisateur (`POST /repos/.../pages`,
       # `build_type: workflow`) ; cette étape ne fait plus que le lire.
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
 
       - name: Vérifier
         run: npm run lint && npm run typographie && npm run coherence
@@ -71,7 +134,7 @@ jobs:
       - name: Neutraliser Jekyll
         run: touch out/.nojekyll
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:
           path: out
 
@@ -83,4 +146,4 @@ jobs:
       url: ${{ steps.publication.outputs.page_url }}
     steps:
       - id: publication
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

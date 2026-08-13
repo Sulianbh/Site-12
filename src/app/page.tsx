@@ -4,7 +4,6 @@ import { PROJETS, PROJETS_ACCUEIL } from "@/lib/projets";
 import { fil } from "@/lib/navigation";
 import { metadonnees, graphe, grapheListeProjets } from "@/lib/seo";
 import CarteProjet from "@/components/CarteProjet";
-import LegendeTrait from "@/components/LegendeTrait";
 import Chiffres from "@/components/Chiffres";
 import AppelRdv from "@/components/AppelRdv";
 import DonneesStructurees from "@/components/DonneesStructurees";
@@ -98,7 +97,14 @@ export default function Accueil() {
           ))}
         </ul>
 
-        <LegendeTrait classe="mt-12" />
+        {/* La légende de la convention de trait a été retirée d’ici.
+            Elle explique comment lire une planche — existant conservé,
+            déposé, projeté — et il n’y a plus une seule planche sur
+            cette page depuis que les cartes portent des photographies :
+            quatre photographies, zéro dessin. Une légende sans son objet
+            ne se lit pas comme une explication, elle se lit comme une
+            erreur. Elle reste sur la page d’un projet, où le dessin est
+            toujours là. */}
       </section>
 
       {/* --------------------------------------------------- chiffres */}

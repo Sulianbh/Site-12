@@ -17,7 +17,7 @@
  *     node scripts/clavier.mjs [http://localhost:3011]
  */
 
-import { chromium } from "/Users/sulianbrouard-heulluy/.npm/_npx/705bc6b22212b352/node_modules/playwright/index.mjs";
+import { chromium } from "playwright";
 
 const BASE = process.argv.find((a) => a.startsWith("http")) ?? "http://localhost:3011";
 const constats = [];
