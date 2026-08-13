@@ -39,11 +39,18 @@ import { PROJETS } from "./projets";
  * `src/app/opengraph-image.tsx` reste le générateur de ce fichier — c’est
  * de lui que `public/partage.png` a été tiré, et c’est lui qu’il faut
  * modifier puis réexporter pour changer la carte.
+ *
+ * L’adresse reste **relative à la racine du site**, sans préfixe. C’est
+ * l’inverse de la règle qui vaut pour `photos.ts` : là-bas les chemins
+ * sont écrits dans du JSX, que `basePath` ne touche pas, et il faut donc
+ * les préfixer soi-même. Ici, Next résout l’adresse contre
+ * `metadataBase` — laquelle vaut déjà `…/Site-12`. Préfixer une seconde
+ * fois donnait `…/Site-12/Site-12/partage.png`, mesuré sur le site
+ * publié : le fichier existait, servi avec le bon type, et l’aperçu
+ * tombait quand même.
  */
-const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-
 const CARTE = {
-  url: `${BASE}/partage.png`,
+  url: "/partage.png",
   type: "image/png",
   width: 1200,
   height: 630,
