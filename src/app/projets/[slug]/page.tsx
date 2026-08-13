@@ -82,8 +82,8 @@ export default async function PageProjet({
                occupe que 34 ferait télécharger le fichier du dessus. */
             sizes={
               estPortrait(couverture)
-                ? "(width >= 64rem) 34rem, 96vw"
-                : "(width >= 64rem) 62rem, 96vw"
+                ? "(min-width: 64rem) 34rem, 96vw"
+                : "(min-width: 64rem) 62rem, 96vw"
             }
             prioritaire
             classe="paraitre cadre-photo-large"
@@ -205,7 +205,7 @@ export default async function PageProjet({
                 key={photo.fichier}
                 slug={projet.slug}
                 photo={photo}
-                sizes="(width >= 64rem) 30rem, 92vw"
+                sizes="(min-width: 64rem) 30rem, 92vw"
                 classe="paraitre"
                 rang={i % 2}
               />

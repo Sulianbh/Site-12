@@ -16,6 +16,18 @@ export const dynamic = "force-static";
  * partage — donc sans fichier binaire à tenir à jour à la main quand la
  * palette change.
  */
+/*
+ * Pas de `export const alt` ici, et c’est une décision, pas un oubli.
+ *
+ * Next l’accepte sur cette route comme sur `opengraph-image.tsx`, mais
+ * il n’en fait pas la même chose : là-bas la valeur devient
+ * `og:image:alt`, une propriété qui existe ; ici elle devient un
+ * attribut `alt` sur un `<link>`, qui n’en a aucun. On l’a essayé et
+ * mesuré : le HTML produit portait
+ * `<link rel="apple-touch-icon" href="…" alt="…">`, c’est-à-dire du
+ * HTML invalide, pour un texte que rien ni personne ne lit — une icône
+ * d’écran d’accueil est nommée par le manifeste, pas par elle-même.
+ */
 export const size = { width: 180, height: 180 };
 export const contentType = "image/png";
 

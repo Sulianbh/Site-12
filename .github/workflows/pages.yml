@@ -127,6 +127,28 @@ jobs:
           NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
           NEXT_PUBLIC_SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
 
+      # L'artefact qui part réellement chez GitHub n'était relu par
+      # personne. Les cinq scripts de rendu tournent dans le job
+      # `verifier`, sur une construction ordinaire : sans export, sans
+      # préfixe, servie à la racine par `next start`. Tout ce qui ne se
+      # casse qu'à cause du préfixe leur échappe donc par construction —
+      # c'est là qu'a vécu, une journée entière, la carte de partage de
+      # ce site, dont l'og:image annonçait `…/Site-12/Site-12/partage.png`
+      # et qui n'a été vue que sur le site en ligne.
+      #
+      # Cette étape ne pouvait pas vivre dans `verifier` : il n'y a pas de
+      # dossier `out/` là-bas, et en poser un reviendrait à construire une
+      # troisième fois. Elle se place donc ici, entre la construction qui
+      # produit l'artefact et le dépôt qui l'emporte, avec les mêmes
+      # variables : elle relit sur le disque les fichiers qui vont
+      # réellement partir. Ni navigateur, ni serveur, ni réseau.
+      - name: Relire l'export
+        run: npm run export
+        env:
+          EXPORT_STATIQUE: oui
+          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+          NEXT_PUBLIC_SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+
       # Jekyll ignore les dossiers commençant par un souligné, et tout
       # ce que Next produit vit dans `_next`. Le dépôt d'artefact ne
       # passe pas par Jekyll, mais le fichier ne coûte rien et protège

@@ -1,7 +1,7 @@
 import {
   type Photo,
   jeuDeSources,
-  source,
+  repli,
   rapport,
   estPortrait,
 } from "@/lib/photos";
@@ -78,7 +78,7 @@ export default function Photographie({
           fait exactement le travail que la règle réclame. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={source(slug, photo)}
+        src={repli(slug, photo)}
         srcSet={jeuDeSources(slug, photo)}
         sizes={sizes}
         alt={photo.texte}

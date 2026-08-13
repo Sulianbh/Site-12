@@ -360,3 +360,32 @@ export function jeuDeSources(slug: string, photo: Photo): string {
   candidats.push(`${source(slug, photo)} ${photo.largeur}w`);
   return candidats.join(", ");
 }
+
+/**
+ * L’adresse de repli, celle qu’on écrit dans `src`.
+ *
+ * `src` n’est pas le fichier affiché : dès qu’un `srcset` accompagné
+ * d’un `sizes` est compris, c’est lui qui décide. `src` ne sert qu’à
+ * deux choses — les navigateurs qui ignorent `srcset`, et le scanner de
+ * préchargement.
+ *
+ * C’est le second qui coûtait cher. Le scanner lit le HTML avant que la
+ * feuille de style ne soit appliquée ; sur la première image de la page,
+ * celle qui est `eager`, il ne connaît donc pas encore la largeur
+ * réelle du cadre et se rabat sur `src`. On y écrivait le fichier
+ * maître : le navigateur téléchargeait 282 ko, puis résolvait `sizes`,
+ * découvrait qu’il lui fallait la déclinaison de 500 px et
+ * téléchargeait 47 ko de plus. Mesuré sur la page Projets : 512 ko
+ * d’images pour six vignettes qui n’en pèsent que 230 à elles toutes.
+ *
+ * On y écrit donc la plus petite déclinaison. Si le scanner se trompe,
+ * il se trompe pour quelques dizaines de kilo-octets ; et un navigateur
+ * qui ne comprendrait pas `srcset` affiche une image un peu douce
+ * plutôt qu’un fichier six fois trop lourd pour son cadre.
+ */
+export function repli(slug: string, photo: Photo): string {
+  const petite = LARGEURS.find((l) => l < photo.largeur);
+  return petite === undefined
+    ? source(slug, photo)
+    : source(slug, photo, petite);
+}

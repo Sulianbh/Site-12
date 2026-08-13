@@ -55,7 +55,7 @@ export default function CarteProjet({
              vignette atteint 550 px là où elle en fait 472 sur le site
              13, et un `30rem` recopié tel quel faisait descendre le
              navigateur d’un cran de trop. */
-          sizes="(width >= 78rem) 35rem, (width >= 48rem) 45vw, 92vw"
+          sizes="(min-width: 78rem) 35rem, (min-width: 48rem) 45vw, 92vw"
           classe="cadre-photo-vignette"
         />
       ) : (

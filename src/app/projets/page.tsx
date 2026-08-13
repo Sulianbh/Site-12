@@ -41,7 +41,7 @@ export default function PageProjets() {
       <ul className="cadre">
         {PROJETS.map((p, i) => (
           <li key={p.slug} data-observe className="filet-haut py-16 md:py-24">
-            <article className="carte relative grid gap-8 lg:grid-cols-12 lg:gap-12">
+            <article className="carte paraitre relative grid gap-8 lg:grid-cols-12 lg:gap-12">
               {/* La couverture de l’opération. La première de la page
                   n’est pas différée : c’est elle que le navigateur
                   mesure comme plus grand élément affiché, et la différer
@@ -52,30 +52,40 @@ export default function PageProjets() {
                   <Photographie
                     slug={p.slug}
                     photo={couverture}
-                    sizes="(width >= 64rem) 30rem, 92vw"
+                    sizes="(min-width: 64rem) 30rem, 92vw"
                     prioritaire={i === 0}
-                    classe="paraitre lg:col-span-5"
-                    rang={0}
+                    classe="lg:col-span-5"
                   />
                 ) : (
-                  <div
-                    className="carte-dessin paraitre lg:col-span-5"
-                    style={{ "--rang": 0 } as React.CSSProperties}
-                  >
+                  <div className="carte-dessin lg:col-span-5">
                     <Schema slug={p.slug} />
                   </div>
                 );
               })()}
 
-              <div
-                className="paraitre flex flex-col lg:col-span-6 lg:col-start-7"
-                style={{ "--rang": 1 } as React.CSSProperties}
-              >
+              <div className="flex flex-col lg:col-span-6 lg:col-start-7">
                 <p className="mention">
                   {String(i + 1).padStart(2, "0")} — {p.annee} · {p.nature}
                 </p>
 
                 <h2 className="titre titre-2 mt-4">
+                  {/* Le voile de `.couvre` se résout contre le premier
+                      ancêtre qui lui fait un bloc conteneur, et une
+                      transformation en fait un. Tant que `paraitre` a vécu
+                      sur les deux colonnes plutôt que sur l’article, la
+                      colonne de texte restait transformée pendant les 700 ms
+                      de l’apparition et le voile se repliait sur elle
+                      seule : la photographie et l’entre-deux ne menaient
+                      nulle part tant que la transition durait, sans que rien
+                      ne le montre. Relevé sur le site 13, dont cette page
+                      est le jumeau : 24 points de carte sur 54 atteignaient
+                      le lien à 150 ms, contre 54 sur 54 la transition
+                      finie, en mouvement réduit et sans JavaScript. La carte
+                      de l’accueil tenait déjà la règle sans la dire :
+                      `paraitre` va sur l’élément contre lequel `.couvre` se
+                      résout, donc sur l’article, jamais sur ses colonnes.
+                      Les `--rang` sont partis avec — il n’y a plus qu’un
+                      élément à faire paraître, donc plus rien à décaler. */}
                   {/* Le nom porte `.lien`, l’ancre porte `.couvre` — et
                       jamais les deux ensemble : `.lien` positionne
                       l’élément, et le voile de `.couvre` prendrait alors

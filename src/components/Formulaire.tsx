@@ -258,7 +258,7 @@ export default function Formulaire() {
             required
             aria-invalid={erreurs.accord ? true : undefined}
             aria-describedby={erreurs.accord ? erreurId("accord") : undefined}
-            className="mt-0.5 h-6 w-6 shrink-0 accent-[#241d17]"
+            className="mt-0.5 h-6 w-6 shrink-0 accent-encre"
           />
           <label htmlFor={champId("accord")} className="text-sm leading-relaxed">
             J’accepte que ces informations soient utilisées pour répondre

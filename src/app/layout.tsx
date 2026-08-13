@@ -41,8 +41,34 @@ const splineMono = Spline_Sans_Mono({
   display: "swap",
 });
 
+/*
+ * Les deux icônes, désignées à la main.
+ *
+ * Next détecte pourtant `icon.svg` et `apple-icon.tsx` tout seul, et il
+ * préfixe correctement la première. Pas la seconde : il écrivait
+ * `href="/apple-icon"` — à la racine du domaine — alors que le fichier
+ * est servi sous `/Site-12/apple-icon`. Mesuré sur le site publié :
+ * l’adresse annoncée répondait 404, celle qui existe répondait 200.
+ * L’icône d’écran d’accueil iOS ne chargeait donc jamais, et
+ * « Ajouter à l’écran d’accueil » se rabattait sur une capture de la
+ * page — exactement la panne que `apple-icon.tsx` existe pour éviter.
+ *
+ * Le défaut n’était visible ni à la relecture, ni dans le HTML servi en
+ * local, où le préfixe est vide et où les deux adresses coïncident. Il
+ * a été trouvé par `scripts/export.mjs`, à son premier passage.
+ *
+ * On préfixe donc les deux à la main — la règle de `photos.ts` et de
+ * `manifest.ts` : `basePath` ne touche pas aux chaînes qu’on écrit
+ * soi-même, et c’est justement pour cela qu’on les écrit.
+ */
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  icons: {
+    icon: { url: `${BASE}/icon.svg`, type: "image/svg+xml", sizes: "any" },
+    apple: { url: `${BASE}/apple-icon`, type: "image/png", sizes: "180x180" },
+  },
   title: {
     default: "PASUPA — Agence d’architecture à Paris",
     /* Le gabarit ajoute neuf caractères : les titres de page sont
