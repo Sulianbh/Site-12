@@ -57,6 +57,16 @@ const splineMono = Spline_Sans_Mono({
  * local, où le préfixe est vide et où les deux adresses coïncident. Il
  * a été trouvé par `scripts/export.mjs`, à son premier passage.
  *
+ * Le préfixe ne suffisait pas. La route `apple-icon` produit, en
+ * export, un fichier **sans extension** — et GitHub Pages déduit le
+ * type MIME de l’extension. L’icône était donc servie en
+ * `application/octet-stream`, ce qui est la panne exacte qui avait
+ * déjà coûté la carte de partage et vaut à `public/partage.png`
+ * d’exister. On sert donc, ici aussi, un vrai `.png` depuis
+ * `public/` : `apple-icon.tsx` reste le générateur, et c’est de lui
+ * que `public/apple-icon.png` est tiré — le modifier oblige à
+ * réexporter.
+ *
  * On préfixe donc les deux à la main — la règle de `photos.ts` et de
  * `manifest.ts` : `basePath` ne touche pas aux chaînes qu’on écrit
  * soi-même, et c’est justement pour cela qu’on les écrit.
@@ -67,7 +77,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   icons: {
     icon: { url: `${BASE}/icon.svg`, type: "image/svg+xml", sizes: "any" },
-    apple: { url: `${BASE}/apple-icon`, type: "image/png", sizes: "180x180" },
+    apple: { url: `${BASE}/apple-icon.png`, type: "image/png", sizes: "180x180" },
   },
   title: {
     default: "PASUPA — Agence d’architecture à Paris",
